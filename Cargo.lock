@@ -10,6 +10,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "a-runtime"
+version = "0.1.0"
+dependencies = [
+ "mio",
+]
+
+[[package]]
 name = "a-stack-swap"
 version = "0.1.0"
 
@@ -20,6 +27,13 @@ version = "0.1.0"
 [[package]]
 name = "c-fibers"
 version = "0.1.0"
+
+[[package]]
+name = "corofy"
+version = "0.1.0"
+dependencies = [
+ "once_cell",
+]
 
 [[package]]
 name = "hermit-abi"
@@ -51,6 +65,12 @@ dependencies = [
  "wasi",
  "windows-sys",
 ]
+
+[[package]]
+name = "once_cell"
+version = "1.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
 name = "wasi"
