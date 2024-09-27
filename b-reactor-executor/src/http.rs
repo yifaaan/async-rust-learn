@@ -1,7 +1,9 @@
 use crate::future::{Future, PollState};
+use crate::runtime::reactor::reactor;
 use crate::runtime::Waker;
 use mio::{Interest, Token};
 use std::io::{ErrorKind, Read, Write};
+
 pub struct Http;
 
 impl Http {
@@ -15,14 +17,17 @@ struct HttpGetFuture {
     /// read data from stream and put it in this
     buffer: Vec<u8>,
     path: String,
+    id: usize,
 }
 
 impl HttpGetFuture {
     fn new(path: &str) -> Self {
+        let id = reactor().next_id();
         Self {
             stream: None,
             buffer: Vec::new(),
             path: path.to_string(),
+            id,
         }
     }
 
@@ -46,10 +51,10 @@ impl Future for HttpGetFuture {
             self.write_request();
 
             // 向OS注册读事件
-            // runtime::registry()
-            //     .register(self.stream.as_mut().unwrap(), Token(0), Interest::READABLE)
-            //     .unwrap();
-            // return PollState::NotReady;
+            let stream = self.stream.as_mut().unwrap();
+            reactor().register(stream, Interest::READABLE, self.id);
+            // 设置关联的waker
+            reactor().set_waker(waker, self.id);
         }
 
         let mut buff = vec![0u8; 4096];
@@ -60,7 +65,10 @@ impl Future for HttpGetFuture {
                 Ok(0) => {
                     // 存储响应信息
                     let s = String::from_utf8_lossy(&self.buffer);
-                    // task: leaf-future 执行完成
+
+                    // task: leaf-future 执行完成，需要取消注册事件
+                    reactor().deregister(self.stream.as_mut().unwrap(), self.id);
+
                     break PollState::Ready(s.to_string());
                 }
                 Ok(n) => {
@@ -70,6 +78,7 @@ impl Future for HttpGetFuture {
                 }
                 // 服务器没准备好数据，需要继续等待
                 Err(e) if e.kind() == ErrorKind::WouldBlock => {
+                    reactor().set_waker(waker, self.id);
                     break PollState::NotReady;
                 }
                 Err(e) if e.kind() == ErrorKind::Interrupted => {
