@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["a-coroutine", "a-runtime", "a-stack-swap", "c-fibers", "corofy"]
+members = ["a-coroutine", "a-runtime", "a-stack-swap", "b-reactor-executor", "c-fibers", "corofy"]
 resolver = "2"
 
 [dependencies]
