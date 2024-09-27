@@ -3,12 +3,12 @@ mod http;
 mod runtime;
 
 use future::{Future, PollState};
-use runtime::Runtime;
+use runtime::Waker;
 
 fn main() {
     let future = async_main();
-    let mut runtime = Runtime::new();
-    runtime.block_on(future);
+    // let mut runtime = Runtime::new();
+    // runtime.block_on(future);
 }
 
 // =================================
@@ -54,7 +54,7 @@ impl Coroutine0 {
 impl Future for Coroutine0 {
     type Output = String;
 
-    fn poll(&mut self) -> PollState<Self::Output> {
+    fn poll(&mut self, waker: &Waker) -> PollState<Self::Output> {
         loop {
             match self.state {
                 State0::Start => {
@@ -67,7 +67,7 @@ impl Future for Coroutine0 {
                 }
 
                 State0::Wait1(ref mut f1) => {
-                    match f1.poll() {
+                    match f1.poll(waker) {
                         PollState::Ready(txt) => {
                             // ---- Code you actually wrote ----
                             println!("{txt}");
@@ -81,7 +81,7 @@ impl Future for Coroutine0 {
                 }
 
                 State0::Wait2(ref mut f2) => {
-                    match f2.poll() {
+                    match f2.poll(waker) {
                         PollState::Ready(txt) => {
                             // ---- Code you actually wrote ----
                             println!("{txt}");

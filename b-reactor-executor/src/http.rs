@@ -1,5 +1,5 @@
 use crate::future::{Future, PollState};
-use crate::{runtime, Runtime};
+use crate::runtime::Waker;
 use mio::{Interest, Token};
 use std::io::{ErrorKind, Read, Write};
 pub struct Http;
@@ -40,15 +40,15 @@ impl HttpGetFuture {
 impl Future for HttpGetFuture {
     type Output = String;
 
-    fn poll(&mut self) -> PollState<Self::Output> {
+    fn poll(&mut self, waker: &Waker) -> PollState<Self::Output> {
         if self.stream.is_none() {
             println!("First poll - start operation");
             self.write_request();
 
             // 向OS注册读事件
-            runtime::registry()
-                .register(self.stream.as_mut().unwrap(), Token(0), Interest::READABLE)
-                .unwrap();
+            // runtime::registry()
+            //     .register(self.stream.as_mut().unwrap(), Token(0), Interest::READABLE)
+            //     .unwrap();
             // return PollState::NotReady;
         }
 
